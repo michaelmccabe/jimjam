@@ -1,0 +1,16 @@
+[package]
+name = "jimjam"
+version = "0.0.1"
+edition = "2021"
+description = "A configurable HTTP mock server with YAML-defined responses"
+
+[dependencies]
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+glob = "0.3"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+regex = "1"

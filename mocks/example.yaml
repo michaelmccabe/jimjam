@@ -1,0 +1,149 @@
+# Example mock definitions demonstrating all features
+
+mocks:
+  # Simple GET endpoint with default response
+  - path: "/api/health"
+    method: GET
+    responses:
+      - status: 200
+        body: |
+          {"status": "ok", "service": "jimjam"}
+
+  # GET with path parameters
+  - path: "/api/users/{id}"
+    method: GET
+    responses:
+      # Match specific user ID
+      - when:
+          path_params:
+            id: "1"
+        status: 200
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {"id": 1, "name": "Alice", "email": "alice@example.com"}
+
+      - when:
+          path_params:
+            id: "2"
+        status: 200
+        body: |
+          {"id": 2, "name": "Bob", "email": "bob@example.com"}
+
+      # Default - user not found
+      - status: 404
+        body: |
+          {"error": "User not found"}
+
+  # GET with query parameters
+  - path: "/api/search"
+    method: GET
+    responses:
+      # Match exact query parameter
+      - when:
+          query_params:
+            q: "error"
+        status: 500
+        body: |
+          {"error": "Search service unavailable"}
+
+      # Match query string contains
+      - when:
+          query_contains: "category=books"
+        status: 200
+        body: |
+          {"results": [{"id": 1, "title": "The Rust Programming Language"}]}
+
+      # Default search response
+      - status: 200
+        body: |
+          {"results": [], "total": 0}
+
+  # POST with body matching
+  - path: "/api/users"
+    method: POST
+    responses:
+      # Match body contains string
+      - when:
+          body_contains: '"role": "admin"'
+        status: 403
+        body: |
+          {"error": "Cannot create admin users via API"}
+
+      # Match body JSON field
+      - when:
+          body_json:
+            name: "test"
+        status: 400
+        body: |
+          {"error": "Name 'test' is reserved"}
+
+      # Match body regex pattern
+      - when:
+          body_regex: '"email":\\s*"[^"]*@test\\.com"'
+        status: 400
+        body: |
+          {"error": "Test email addresses not allowed"}
+
+      # Default success
+      - status: 201
+        headers:
+          Content-Type: "application/json"
+          X-Request-Id: "mock-12345"
+        body: |
+          {"id": 99, "created": true}
+
+  # Header matching
+  - path: "/api/protected"
+    method: GET
+    responses:
+      # Exact header match
+      - when:
+          headers:
+            Authorization: "Bearer valid-token-123"
+        status: 200
+        body: |
+          {"data": "secret stuff"}
+
+      # Header contains substring
+      - when:
+          header_contains:
+            Authorization: "Bearer"
+        status: 401
+        body: |
+          {"error": "Invalid token"}
+
+      # No auth header
+      - status: 401
+        body: |
+          {"error": "Authorization required"}
+
+  # Simulated slow endpoint
+  - path: "/api/slow"
+    method: GET
+    responses:
+      - status: 200
+        delay_ms: 2000
+        body: |
+          {"message": "Sorry for the wait!"}
+
+  # GET all users
+  - path: "/api/users"
+    method: GET
+    responses:
+      - status: 200
+        body: |
+          [
+            {"id": 1, "name": "Alice"},
+            {"id": 2, "name": "Bob"},
+            {"id": 3, "name": "Charlie"}
+          ]
+
+  # Example with @ file reference - loads body from external JSON file
+  - path: "/api/products"
+    method: GET
+    responses:
+      - status: 200
+        headers:
+          Content-Type: "application/json"
+        body: "@./mocks/data/products.json"

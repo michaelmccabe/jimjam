@@ -1,0 +1,12 @@
+# jimjam main configuration
+
+server:
+  host: "127.0.0.1"
+  port: 8080
+
+# Location of mock response definition files
+mock_files:
+  directory: "./mocks"
+  patterns:
+    - "**/*.yaml"
+    - "**/*.yml"
