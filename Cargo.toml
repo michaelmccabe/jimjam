@@ -1,5 +1,5 @@
 [package]
-name = "jimjam"
+name = "jimjam-http"
 version = "0.0.1"
 edition = "2021"
 description = "A configurable HTTP mock server with YAML-defined responses"
