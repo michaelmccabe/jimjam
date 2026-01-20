@@ -1,13 +1,13 @@
 [package]
 name = "jimjam"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 description = "A configurable HTTP mock server with YAML-defined responses"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/michaelmccabe/jimjam-http"
-homepage = "https://github.com/michaelmccabe/jimjam-http"
-documentation = "https://docs.rs/jimjam-http"
+repository = "https://github.com/michaelmccabe/jimjam"
+homepage = "https://github.com/michaelmccabe/jimjam"
+documentation = "https://docs.rs/jimjam"
 
 [dependencies]
 axum = "0.7"
