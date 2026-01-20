@@ -12,13 +12,12 @@ Ramjam is a CLI tool for executing HTTP API workflows defined in YAML files. It 
 * Validate responses with JSONPath assertions
 
 ## Prerequisites
+
 You need to have support for go on your machine.
 
 ### **Install ramjam**
 
 [ramjam](https://github.com/michaelmccabe/ramjam/blob/main/README.md)  is a testing tool written in go.
-
-#### Quick Install
 
 Install directly to your `$GOPATH/bin` or `$GOBIN`:
 
@@ -26,25 +25,19 @@ Install directly to your `$GOPATH/bin` or `$GOBIN`:
 make install
 ```
 
-This will compile and install the `ramjam` binary to your Go bin directory 
+This will compile and install the `ramjam` binary to your Go bin directory.
 
+Alternatively, download from [ramjam releases](https://github.com/michaelmccabe/ramjam/releases) and install locally.
+
+### **Start jimjam**
 
 ```bash
-# clone and build
-git clone https://github.com/michaelmccabe/ramjam.git
-cd ramjam
-cargo install --path .
+cd /path/to/jimjam
+cargo run
 ```
 
 
-1. **Start jimjam**:
-
-   ```bash
-   cd /path/to/jimjam
-   cargo run
-   ```
-
-   Jimjam will start on `http://127.0.0.1:8080` by default.
+jimjam will start on `http://127.0.0.1:8080` by default.
 
 ## Running Tests
 
@@ -175,6 +168,8 @@ request:
 ## Writing New Tests
 
 
+
+
 1. Create a new `.yaml` file in `ramjam-test/`
 2. Define metadata and config
 3. Add workflow steps
@@ -200,7 +195,8 @@ If you add a new endpoint to `mocks/example.yaml`:
         {"error": "Order not found"}
 ```
 
-Create a test in `ramjam-test/orders.yaml`:
+
+Create a test in `ramjam-test/orders.yaml`
 
 ```yaml
 metadata:
