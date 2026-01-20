@@ -1,0 +1,91 @@
+# Jimjam POST Body Matching Test
+# Tests body_contains, body_json, and body_regex matching
+
+metadata:
+  name: "POST Body Matching Test"
+  author: "jimjam"
+  description: "Verifies request body matching for POST endpoints"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "create-admin-user"
+    description: "Attempt to create admin user (should be forbidden)"
+    request:
+      method: "POST"
+      url: "${base_url}/api/users"
+      headers:
+        Content-Type: "application/json"
+      body:
+        name: "Evil Admin"
+        role: "admin"
+    expect:
+      status: 403
+      json_path_match:
+        - path: "error"
+          value: "Cannot create admin users via API"
+    output:
+      print: "Correctly blocked admin user creation"
+
+  - step: "create-test-user"
+    description: "Attempt to create user named 'test' (reserved)"
+    request:
+      method: "POST"
+      url: "${base_url}/api/users"
+      headers:
+        Content-Type: "application/json"
+      body:
+        name: "test"
+        email: "valid@example.com"
+    expect:
+      status: 400
+      json_path_match:
+        - path: "error"
+          value: "Name 'test' is reserved"
+    output:
+      print: "Correctly rejected reserved name"
+
+  - step: "create-test-email"
+    description: "Attempt to create user with @test.com email"
+    request:
+      method: "POST"
+      url: "${base_url}/api/users"
+      headers:
+        Content-Type: "application/json"
+      body:
+        name: "Valid User"
+        email: "user@test.com"
+    expect:
+      status: 400
+      json_path_match:
+        - path: "error"
+          value: "Test email addresses not allowed"
+    output:
+      print: "Correctly rejected test email address"
+
+  - step: "create-valid-user"
+    description: "Create a valid user"
+    request:
+      method: "POST"
+      url: "${base_url}/api/users"
+      headers:
+        Content-Type: "application/json"
+      body:
+        name: "New User"
+        email: "newuser@example.com"
+    expect:
+      status: 201
+      json_path_match:
+        - path: "id"
+          value: 99
+        - path: "created"
+          value: true
+      headers:
+        - name: "X-Request-Id"
+          value: "mock-12345"
+    capture:
+      - json_path: "id"
+        as: "new_user_id"
+    output:
+      print: "Successfully created user with ID: ${new_user_id}"

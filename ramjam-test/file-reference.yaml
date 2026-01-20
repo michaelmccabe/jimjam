@@ -1,0 +1,26 @@
+# Jimjam Products Test (File Reference)
+# Tests body loaded from external JSON file
+
+metadata:
+  name: "Products File Reference Test"
+  author: "jimjam"
+  description: "Verifies body loaded from external JSON file via @ syntax"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "get-products"
+    description: "Fetch products (body loaded from mocks/data/products.json)"
+    request:
+      method: "GET"
+      url: "${base_url}/api/products"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      headers:
+        - name: "Content-Type"
+          contains: "application/json"
+    output:
+      print: "Successfully fetched products from file reference"

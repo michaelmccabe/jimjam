@@ -2,10 +2,13 @@ mod config;
 mod matcher;
 mod mock;
 mod server;
+mod watcher;
 
 use config::AppConfig;
 use server::{create_router, load_mocks, AppState};
+use watcher::start_file_watcher;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tracing::info;
 use tracing_subscriber;
 
@@ -35,7 +38,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Create application state
-    let state = Arc::new(AppState { endpoints });
+    let state = Arc::new(AppState { endpoints: RwLock::new(endpoints), config: config.clone() });
+
+    // Start file watcher for hot reload if enabled
+    if config.mock_files.hot_reload {
+        if let Err(e) = start_file_watcher(Arc::clone(&state), &config).await {
+            tracing::warn!("Failed to start file watcher: {}. Hot reload disabled.", e);
+        }
+    }
 
     // Create router
     let app = create_router(state);

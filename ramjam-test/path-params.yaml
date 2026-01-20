@@ -1,0 +1,68 @@
+# Jimjam Path Parameters Test
+# Tests path parameter matching with different user IDs
+
+metadata:
+  name: "Path Parameters Test"
+  author: "jimjam"
+  description: "Verifies path parameter matching for user endpoints"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "get-user-1"
+    description: "Fetch user with ID 1 (Alice)"
+    request:
+      method: "GET"
+      url: "${base_url}/api/users/1"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "id"
+          value: 1
+        - path: "name"
+          value: "Alice"
+        - path: "email"
+          value: "alice@example.com"
+    capture:
+      - json_path: "name"
+        as: "user1_name"
+    output:
+      print: "Found user: ${user1_name}"
+
+  - step: "get-user-2"
+    description: "Fetch user with ID 2 (Bob)"
+    request:
+      method: "GET"
+      url: "${base_url}/api/users/2"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "id"
+          value: 2
+        - path: "name"
+          value: "Bob"
+    capture:
+      - json_path: "name"
+        as: "user2_name"
+    output:
+      print: "Found user: ${user2_name}"
+
+  - step: "get-user-not-found"
+    description: "Fetch user with unknown ID (should 404)"
+    request:
+      method: "GET"
+      url: "${base_url}/api/users/999"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 404
+      json_path_match:
+        - path: "error"
+          value: "User not found"
+    output:
+      print: "Correctly received 404 for unknown user"

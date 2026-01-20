@@ -80,8 +80,7 @@ impl MockFile {
     /// Load a mock definition file from the specified path
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content = fs::read_to_string(&path)?;
-        let mock_file: MockFile = serde_yaml::from_str(&content)?;
-        Ok(mock_file)
+    Self::from_yaml(&content)
     }
 }
 

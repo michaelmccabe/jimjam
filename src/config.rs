@@ -34,18 +34,24 @@ pub struct MockFilesConfig {
     /// Glob patterns for matching mock files (e.g., "**/*.yaml")
     #[serde(default = "default_patterns")]
     pub patterns: Vec<String>,
+    /// Enable or disable hot reload of mock files
+    #[serde(default = "default_hot_reload")]
+    pub hot_reload: bool,
 }
 
 fn default_patterns() -> Vec<String> {
     vec!["**/*.yaml".to_string(), "**/*.yml".to_string()]
 }
 
+fn default_hot_reload() -> bool {
+    true
+}
+
 impl AppConfig {
     /// Load configuration from the specified path
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content = fs::read_to_string(path)?;
-        let config: AppConfig = serde_yaml::from_str(&content)?;
-        Ok(config)
+        Self::from_yaml(&content)
     }
 
     /// Load configuration from default location (./config/config.yaml)

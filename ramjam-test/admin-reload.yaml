@@ -1,0 +1,29 @@
+# Jimjam Admin Reload Test
+# Tests the hot-reload admin endpoint
+
+metadata:
+  name: "Admin Reload Test"
+  author: "jimjam"
+  description: "Verifies the /__admin/reload endpoint for hot reloading mocks"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "trigger-reload"
+    description: "POST to admin reload endpoint"
+    request:
+      method: "POST"
+      url: "${base_url}/__admin/reload"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "status"
+          value: "ok"
+    capture:
+      - json_path: "endpoints_loaded"
+        as: "endpoint_count"
+    output:
+      print: "Reloaded ${endpoint_count} mock endpoints"
