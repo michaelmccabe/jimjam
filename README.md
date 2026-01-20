@@ -5,7 +5,6 @@ A configurable HTTP mock server that serves responses based on YAML-defined rule
 ## Features
 
 * **YAML-based configuration** - Define mock responses in simple YAML files
-* **Conditional responses** - Match requests by path params, query strings, headers, or body content
 * **Multiple response scenarios** - Define different responses for the same endpoint based on conditions
 * **Path parameters** - Support for dynamic URL segments like `/users/{id}`
 * **Response delays** - Simulate slow APIs with configurable delays
@@ -39,39 +38,29 @@ curl http://127.0.0.1:8080/api/health
 ### Main Config (`config/config.yaml`)
 
 ```yaml
+# jimjam main configuration
+
 server:
   host: "127.0.0.1"
   port: 8080
 
+# Location of mock response definition files
 mock_files:
   directory: "./mocks"
   patterns:
     - "**/*.yaml"
     - "**/*.yml"
+  hot_reload: true
 ```
 
-### Mock Definitions (`mocks/*.yaml`)
-
-```yaml
 mocks:
-  - path: "/api/users/{id}"
-    method: GET
-    responses:
-      # Conditional response
-      - when:
-          path_params:
-            id: "1"
-        status: 200
-        body: |
-          {"id": 1, "name": "Alice"}
 
-      # Fallback response (no conditions)
-      - status: 404
-        body: |
-          {"error": "User not found"}
-```
+* path: "/api/users/{id}"
+  id: "1"
+  status: 200
+  {"id": 1, "name": "Alice"}
 
-## Condition Types
+  # Fallback response (no conditions)
 
 | Condition | Description | Example |
 |----|----|----|
@@ -99,6 +88,8 @@ mocks:
 ```
 
 ### Body Content Options
+
+
 
 
 1. **Inline body** - Write content directly in YAML
@@ -138,4 +129,6 @@ jimjam/
 cargo test
 ```
 
+## How jimjam works
 
+See [how-jimjam-works.md](./how-jimjam-works.md) for schema, matching, and advanced usage.

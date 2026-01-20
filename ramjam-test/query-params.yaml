@@ -1,0 +1,56 @@
+# Jimjam Query Parameters Test
+# Tests query string matching
+
+metadata:
+  name: "Query Parameters Test"
+  author: "jimjam"
+  description: "Verifies query parameter and query_contains matching"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "search-error"
+    description: "Search with q=error triggers 500"
+    request:
+      method: "GET"
+      url: "${base_url}/api/search?q=error"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 500
+      json_path_match:
+        - path: "error"
+          value: "Search service unavailable"
+    output:
+      print: "Correctly received 500 for error query"
+
+  - step: "search-books"
+    description: "Search with category=books"
+    request:
+      method: "GET"
+      url: "${base_url}/api/search?q=rust&category=books"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "results[0].title"
+          value: "The Rust Programming Language"
+    output:
+      print: "Found book results"
+
+  - step: "search-default"
+    description: "Search with no matching conditions falls through to default"
+    request:
+      method: "GET"
+      url: "${base_url}/api/search?q=anything"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "total"
+          value: 0
+    output:
+      print: "Default empty search results returned"

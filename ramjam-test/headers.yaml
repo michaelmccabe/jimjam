@@ -1,0 +1,54 @@
+# Jimjam Header Matching Test
+# Tests header-based conditional responses
+
+metadata:
+  name: "Header Matching Test"
+  author: "jimjam"
+  description: "Verifies header matching for protected endpoints"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "no-auth-header"
+    description: "Access protected endpoint without auth header"
+    request:
+      method: "GET"
+      url: "${base_url}/api/protected"
+    expect:
+      status: 401
+      json_path_match:
+        - path: "error"
+          value: "Authorization required"
+    output:
+      print: "Correctly rejected request without auth header"
+
+  - step: "invalid-token"
+    description: "Access with invalid Bearer token"
+    request:
+      method: "GET"
+      url: "${base_url}/api/protected"
+      headers:
+        Authorization: "Bearer invalid-token"
+    expect:
+      status: 401
+      json_path_match:
+        - path: "error"
+          value: "Invalid token"
+    output:
+      print: "Correctly rejected invalid token"
+
+  - step: "valid-token"
+    description: "Access with valid Bearer token"
+    request:
+      method: "GET"
+      url: "${base_url}/api/protected"
+      headers:
+        Authorization: "Bearer valid-token-123"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "data"
+          value: "secret stuff"
+    output:
+      print: "Successfully accessed protected resource"

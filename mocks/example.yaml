@@ -63,9 +63,9 @@ mocks:
   - path: "/api/users"
     method: POST
     responses:
-      # Match body contains string
+      # Match body contains string (no space - matches compact JSON)
       - when:
-          body_contains: '"role": "admin"'
+          body_contains: '"role":"admin"'
         status: 403
         body: |
           {"error": "Cannot create admin users via API"}
@@ -78,9 +78,9 @@ mocks:
         body: |
           {"error": "Name 'test' is reserved"}
 
-      # Match body regex pattern
+      # Match body regex pattern (matches @test.com in any format)
       - when:
-          body_regex: '"email":\\s*"[^"]*@test\\.com"'
+          body_regex: '@test\.com'
         status: 400
         body: |
           {"error": "Test email addresses not allowed"}

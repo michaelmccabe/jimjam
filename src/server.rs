@@ -6,7 +6,7 @@ use axum::{
     extract::State,
     http::{HeaderMap, HeaderName, HeaderValue, Method, Request, StatusCode},
     response::Response,
-    routing::any,
+    routing::{any, post},
     Router,
 };
 use glob::glob;
@@ -16,10 +16,12 @@ use std::path::Path;
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 use tracing::{error, info, warn};
+use tokio::sync::RwLock;
 
 /// Shared application state
 pub struct AppState {
-    pub endpoints: Vec<MockEndpoint>,
+    pub endpoints: RwLock<Vec<MockEndpoint>>, // mutable for hot reload
+    pub config: AppConfig,                    // keep config for reload
 }
 
 /// Load all mock definitions from the configured directory
@@ -57,9 +59,20 @@ pub fn load_mocks(config: &AppConfig) -> Result<Vec<MockEndpoint>, Box<dyn std::
     Ok(all_endpoints)
 }
 
+impl AppState {
+    pub async fn reload_mocks(&self) -> Result<usize, Box<dyn std::error::Error>> {
+        let new_endpoints = load_mocks(&self.config)?;
+        let count = new_endpoints.len();
+        *self.endpoints.write().await = new_endpoints;
+        info!("Reloaded {} mock endpoints", count);
+        Ok(count)
+    }
+}
+
 /// Create the Axum router with all routes
 pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
+        .route("/__admin/reload", post(reload_mocks_handler))
         .route("/*path", any(handle_request))
         .route("/", any(handle_request))
         .with_state(state)
@@ -96,8 +109,6 @@ async fn handle_request(
     let body_str = String::from_utf8_lossy(&body_bytes).to_string();
 
     let request_info = RequestInfo {
-        method: method_str.clone(),
-        path: path.to_string(),
         query_string,
         headers: header_map,
         body: body_str,
@@ -106,7 +117,8 @@ async fn handle_request(
     info!("{} {}", method_str, path);
 
     // Find matching endpoint and response
-    for endpoint in &state.endpoints {
+    let endpoints = state.endpoints.read().await;
+    for endpoint in endpoints.iter() {
         // Check method matches
         if endpoint.method.to_uppercase() != method_str {
             continue;
@@ -123,6 +135,25 @@ async fn handle_request(
     // No match found
     warn!("No mock found for {} {}", method_str, path);
     build_error_response(404, &format!("No mock defined for {} {}", method_str, path))
+}
+
+/// Admin handler to trigger manual reload
+async fn reload_mocks_handler(State(state): State<Arc<AppState>>) -> Response<Body> {
+    match state.reload_mocks().await {
+        Ok(count) => {
+            let body = serde_json::json!({
+                "status": "ok",
+                "endpoints_loaded": count
+            })
+            .to_string();
+            Response::builder()
+                .status(StatusCode::OK)
+                .header("Content-Type", "application/json")
+                .body(Body::from(body))
+                .unwrap()
+        }
+        Err(e) => build_error_response(500, &format!("Reload failed: {}", e)),
+    }
 }
 
 /// Build the HTTP response from a MockResponse

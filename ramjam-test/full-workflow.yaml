@@ -1,0 +1,126 @@
+# Jimjam Full Workflow Test
+# End-to-end workflow testing multiple features with variable capture
+
+metadata:
+  name: "Full Workflow Test"
+  author: "jimjam"
+  description: "End-to-end test demonstrating ramjam features with jimjam"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "health-check"
+    description: "Verify server is running"
+    request:
+      method: "GET"
+      url: "${base_url}/api/health"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "status"
+          value: "ok"
+    output:
+      print: "Server is healthy"
+
+  - step: "list-all-users"
+    description: "Get all users from the list endpoint"
+    request:
+      method: "GET"
+      url: "${base_url}/api/users"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "$[0].name"
+          value: "Alice"
+        - path: "$[1].name"
+          value: "Bob"
+        - path: "$[2].name"
+          value: "Charlie"
+    capture:
+      - json_path: "$[0].id"
+        as: "first_user_id"
+    output:
+      print: "Found users, first user ID: ${first_user_id}"
+
+  - step: "get-first-user-details"
+    description: "Fetch details of the first user using captured ID"
+    request:
+      method: "GET"
+      url: "${base_url}/api/users/${first_user_id}"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "name"
+          value: "Alice"
+        - path: "email"
+          value: "alice@example.com"
+    output:
+      print: "Successfully fetched user details for ID ${first_user_id}"
+
+  - step: "create-new-user"
+    description: "Create a new user"
+    request:
+      method: "POST"
+      url: "${base_url}/api/users"
+      headers:
+        Content-Type: "application/json"
+      body:
+        name: "New User"
+        email: "newuser@example.com"
+    expect:
+      status: 201
+      json_path_match:
+        - path: "created"
+          value: true
+    capture:
+      - json_path: "id"
+        as: "new_user_id"
+    output:
+      print: "Created new user with ID: ${new_user_id}"
+
+  - step: "access-protected-no-auth"
+    description: "Try to access protected resource without auth"
+    request:
+      method: "GET"
+      url: "${base_url}/api/protected"
+    expect:
+      status: 401
+    output:
+      print: "Correctly rejected unauthenticated request"
+
+  - step: "access-protected-with-auth"
+    description: "Access protected resource with valid token"
+    request:
+      method: "GET"
+      url: "${base_url}/api/protected"
+      headers:
+        Authorization: "Bearer valid-token-123"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "data"
+          value: "secret stuff"
+    output:
+      print: "Successfully accessed protected resource"
+
+  - step: "search-with-query"
+    description: "Search for books"
+    request:
+      method: "GET"
+      url: "${base_url}/api/search?category=books"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "results[0].title"
+          value: "The Rust Programming Language"
+    output:
+      print: "Search completed successfully"

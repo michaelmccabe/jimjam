@@ -4,8 +4,6 @@ use std::collections::HashMap;
 
 /// Represents an incoming HTTP request for matching
 pub struct RequestInfo {
-    pub method: String,
-    pub path: String,
     pub query_string: Option<String>,
     pub headers: HashMap<String, String>,
     pub body: String,
@@ -230,15 +228,11 @@ mod tests {
     use crate::mock::{MockEndpoint, MockResponse, ResponseCondition};
 
     fn create_request(
-        method: &str,
-        path: &str,
         query: Option<&str>,
         headers: Vec<(&str, &str)>,
         body: &str,
     ) -> RequestInfo {
         RequestInfo {
-            method: method.to_string(),
-            path: path.to_string(),
             query_string: query.map(|s| s.to_string()),
             headers: headers
                 .into_iter()
@@ -326,7 +320,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/users/{id}", "GET", vec![response]);
-        let request = create_request("GET", "/users/123", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "123".to_string());
@@ -343,7 +337,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/users/{id}", "GET", vec![response]);
-        let request = create_request("GET", "/users/456", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "456".to_string());
@@ -361,7 +355,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/items", "GET", vec![response]);
-        let request = create_request("GET", "/api/items", Some("sort=asc&limit=10"), vec![], "");
+        let request = create_request(Some("sort=asc&limit=10"), vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -374,7 +368,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/items", "GET", vec![response]);
-        let request = create_request("GET", "/api/items", Some("sort=desc"), vec![], "");
+        let request = create_request(Some("sort=desc"), vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_none());
@@ -387,7 +381,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/search", "GET", vec![response]);
-        let request = create_request("GET", "/api/search", Some("q=test&category=books"), vec![], "");
+        let request = create_request(Some("q=test&category=books"), vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -402,13 +396,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/protected", "GET", vec![response]);
-        let request = create_request(
-            "GET",
-            "/api/protected",
-            None,
-            vec![("authorization", "Bearer token123")],
-            "",
-        );
+        let request = create_request(None, vec![("authorization", "Bearer token123")], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -421,13 +409,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/protected", "GET", vec![response]);
-        let request = create_request(
-            "GET",
-            "/api/protected",
-            None,
-            vec![("authorization", "Bearer any-token-here")],
-            "",
-        );
+        let request = create_request(None, vec![("authorization", "Bearer any-token-here")], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -440,7 +422,7 @@ mod tests {
 
         let response = create_response(401, Some(condition));
         let endpoint = create_endpoint("/api/protected", "GET", vec![response]);
-        let request = create_request("GET", "/api/protected", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_none());
@@ -455,13 +437,7 @@ mod tests {
 
         let response = create_response(403, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
-        let request = create_request(
-            "POST",
-            "/api/users",
-            None,
-            vec![],
-            r#"{"name": "test", "role": "admin"}"#,
-        );
+        let request = create_request(None, vec![], r#"{"name": "test", "role": "admin"}"#);
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -477,13 +453,7 @@ mod tests {
 
         let response = create_response(400, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
-        let request = create_request(
-            "POST",
-            "/api/users",
-            None,
-            vec![],
-            r#"{"name": "test", "email": "test@example.com"}"#,
-        );
+        let request = create_request(None, vec![], r#"{"name": "test", "email": "test@example.com"}"#);
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -497,7 +467,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/data", "POST", vec![response]);
-        let request = create_request("POST", "/api/data", None, vec![], r#"{"count": 42}"#);
+        let request = create_request(None, vec![], r#"{"count": 42}"#);
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -510,7 +480,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
-        let request = create_request("POST", "/api/users", None, vec![], "not valid json");
+        let request = create_request(None, vec![], "not valid json");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_none());
@@ -525,13 +495,7 @@ mod tests {
 
         let response = create_response(400, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
-        let request = create_request(
-            "POST",
-            "/api/users",
-            None,
-            vec![],
-            r#"{"email": "user@test.com"}"#,
-        );
+        let request = create_request(None, vec![], r#"{"email": "user@test.com"}"#);
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -544,13 +508,7 @@ mod tests {
 
         let response = create_response(400, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
-        let request = create_request(
-            "POST",
-            "/api/users",
-            None,
-            vec![],
-            r#"{"email": "user@example.com"}"#,
-        );
+        let request = create_request(None, vec![], r#"{"email": "user@example.com"}"#);
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_none());
@@ -563,7 +521,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/test", "POST", vec![response]);
-        let request = create_request("POST", "/api/test", None, vec![], "anything");
+        let request = create_request(None, vec![], "anything");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_none()); // Invalid regex fails to match
@@ -580,13 +538,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/users/{id}", "GET", vec![response]);
-        let request = create_request(
-            "GET",
-            "/users/123",
-            Some("include=details"),
-            vec![("accept", "application/json")],
-            "",
-        );
+        let request = create_request(Some("include=details"), vec![("accept", "application/json")], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "123".to_string());
@@ -603,7 +555,7 @@ mod tests {
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/users/{id}", "GET", vec![response]);
-        let request = create_request("GET", "/users/123", Some("include=summary"), vec![], "");
+        let request = create_request(Some("include=summary"), vec![], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "123".to_string());
@@ -618,7 +570,7 @@ mod tests {
     fn test_fallback_response_no_condition() {
         let fallback = create_response(404, None);
         let endpoint = create_endpoint("/api/test", "GET", vec![fallback]);
-        let request = create_request("GET", "/api/test", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -629,7 +581,7 @@ mod tests {
     fn test_fallback_response_empty_condition() {
         let fallback = create_response(404, Some(ResponseCondition::default()));
         let endpoint = create_endpoint("/api/test", "GET", vec![fallback]);
-        let request = create_request("GET", "/api/test", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let matched = find_matching_response(&endpoint, &request, &HashMap::new());
         assert!(matched.is_some());
@@ -647,7 +599,7 @@ mod tests {
         ];
 
         let endpoint = create_endpoint("/users/{id}", "GET", responses);
-        let request = create_request("GET", "/users/1", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "1".to_string());
@@ -668,7 +620,7 @@ mod tests {
         ];
 
         let endpoint = create_endpoint("/users/{id}", "GET", responses);
-        let request = create_request("GET", "/users/999", None, vec![], "");
+        let request = create_request(None, vec![], "");
 
         let mut path_params = HashMap::new();
         path_params.insert("id".to_string(), "999".to_string());

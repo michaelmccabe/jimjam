@@ -1,0 +1,28 @@
+# Jimjam Health Check Test
+# Simple test to verify the mock server is running
+
+metadata:
+  name: "Health Check"
+  author: "jimjam"
+  description: "Verifies the jimjam mock server is responding"
+
+config:
+  base_url: "http://127.0.0.1:8080"
+
+workflow:
+  - step: "health-check"
+    description: "Check the /api/health endpoint"
+    request:
+      method: "GET"
+      url: "${base_url}/api/health"
+      headers:
+        Accept: "application/json"
+    expect:
+      status: 200
+      json_path_match:
+        - path: "status"
+          value: "ok"
+        - path: "service"
+          value: "jimjam"
+    output:
+      print: "Health check passed - jimjam is running"

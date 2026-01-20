@@ -10,3 +10,4 @@ mock_files:
   patterns:
     - "**/*.yaml"
     - "**/*.yml"
+  hot_reload: true
