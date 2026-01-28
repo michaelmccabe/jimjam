@@ -6,11 +6,11 @@ mod watcher;
 
 use config::AppConfig;
 use server::{create_router, load_mocks, AppState};
-use watcher::start_file_watcher;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{debug, info};
 use tracing_subscriber;
+use watcher::start_file_watcher;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -25,20 +25,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         e
     })?;
 
-    info!(
-        "Configuration loaded. Server will listen on {}:{}",
-        config.server.host, config.server.port
-    );
+    debug!("Configuration loaded successfully");
+    info!(config.server.host, config.server.port);
 
     // Load all mock definitions
     let endpoints = load_mocks(&config)?;
 
     if endpoints.is_empty() {
         eprintln!("Warning: No mock endpoints were loaded!");
+    } else {
+        eprintln!("Loaded {} mock endpoints", endpoints.len());
     }
 
     // Create application state
-    let state = Arc::new(AppState { endpoints: RwLock::new(endpoints), config: config.clone() });
+    let state = Arc::new(AppState {
+        endpoints: RwLock::new(endpoints),
+        config: config.clone(),
+    });
 
     // Start file watcher for hot reload if enabled
     if config.mock_files.hot_reload {

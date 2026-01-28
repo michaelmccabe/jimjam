@@ -21,3 +21,16 @@ tracing-subscriber = "0.3"
 regex = "1"
 notify = "6"
 notify-debouncer-mini = "0.4"
+
+[profile.dev]
+debug = true
+debug-assertions = true
+overflow-checks = true
+incremental = true
+opt-level = 0
+
+[profile.release]
+debug = false
+lto = true
+codegen-units = 1
+panic = "abort"
