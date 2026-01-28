@@ -1,0 +1,39 @@
+[
+  {
+    "label": "cargo build",
+    "command": "cargo build",
+    "use_new_terminal": false,
+  },
+  {
+    "label": "Run jimjam (Debug)",
+    "command": "cargo run",
+    "env": {
+      "RUST_LOG": "debug",
+      "RUST_BACKTRACE": "1",
+    },
+    "use_new_terminal": true,
+  },
+  {
+    "label": "Build jimjam (Debug)",
+    "command": "cargo build",
+    "use_new_terminal": true,
+  },
+  {
+    "label": "Test jimjam",
+    "command": "cargo test",
+    "env": {
+      "RUST_LOG": "debug",
+      "RUST_BACKTRACE": "1",
+    },
+    "use_new_terminal": true,
+  },
+  {
+    "label": "Run jimjam with verbose logging",
+    "command": "cargo run",
+    "env": {
+      "RUST_LOG": "trace",
+      "RUST_BACKTRACE": "full",
+    },
+    "use_new_terminal": true,
+  },
+]
