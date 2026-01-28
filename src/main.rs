@@ -26,7 +26,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     debug!("Configuration loaded successfully");
-    info!(config.server.host, config.server.port);
+    info!(
+        host = %config.server.host,
+        port = config.server.port,
+        "Server configuration loaded"
+    );
 
     // Load all mock definitions
     let endpoints = load_mocks(&config)?;
