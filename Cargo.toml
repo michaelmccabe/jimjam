@@ -1,6 +1,6 @@
 [package]
 name = "jimjam"
-version = "0.0.2"
+version = "0.1.0"
 edition = "2021"
 description = "A configurable HTTP mock server with YAML-defined responses"
 license = "MIT"
