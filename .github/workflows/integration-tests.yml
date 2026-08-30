@@ -41,7 +41,7 @@ jobs:
 
       - name: Start jimjam server
         run: |
-          ./target/release/jimjam-http &
+          ./target/release/jimjam &
           echo "Waiting for server to start..."
           sleep 3
           # Verify server is running
@@ -52,4 +52,4 @@ jobs:
 
       - name: Stop jimjam server
         if: always()
-        run: pkill jimjam-http || true
+        run: pkill jimjam || true
