@@ -35,7 +35,7 @@ jobs:
 
       - name: Install ramjam
         run: |
-          curl -L -o ramjam https://github.com/michaelmccabe/ramjam/releases/download/v1.0.0-beta.1/ramjam-linux-amd64
+          curl -L -o ramjam https://github.com/michaelmccabe/ramjam/releases/download/v1.0.0/ramjam-linux-amd64
           chmod +x ramjam
           sudo mv ramjam /usr/local/bin/
 
