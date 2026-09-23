@@ -239,3 +239,20 @@ fn build_error_response(status: u16, message: &str) -> Response<Body> {
         .body(Body::from(body))
         .unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::sync::RwLock;
+
+    #[tokio::test]
+    async fn test_create_router_valid_syntax() {
+        let config = AppConfig::from_yaml("server: {}\nmock_files: {directory: './mocks'}").unwrap();
+        let state = Arc::new(AppState {
+            config,
+            endpoints: RwLock::new(Vec::new()),
+        });
+        // Verifies route syntax (such as wildcards) is valid and does not panic on Axum startup
+        let _router = create_router(state);
+    }
+}
