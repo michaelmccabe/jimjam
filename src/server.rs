@@ -73,7 +73,7 @@ impl AppState {
 pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/__admin/reload", post(reload_mocks_handler))
-        .route("/*path", any(handle_request))
+        .route("/{*path}", any(handle_request))
         .route("/", any(handle_request))
         .with_state(state)
 }
