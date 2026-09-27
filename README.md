@@ -2,6 +2,20 @@
 
 A configurable HTTP mock server that serves responses based on YAML-defined rules. Perfect for API mocking, testing, and development.
 
+---
+
+## 🤖 Jimjam for AI Coding Agents & LLM Workflows
+
+Jimjam is designed to be an **Agentic-Native HTTP Mock Server**. While humans love using Jimjam for its simplicity, **AI coding agents (like Gemini, Cursor, Copilot, and Claude) find it significantly more reliable than writing custom mock scripts in code** because it avoids:
+
+- ❌ Writing boilerplate mock servers in Node/Python/Go with fragile route handlers.
+- ❌ Port collisions, background daemon hangs, and unhandled shutdown states.
+- ❌ Heavy test fixture bloat and brittle stubbing frameworks.
+
+By providing a declarative YAML interface, agents can rapidly stand up mock APIs, simulate complex edge cases and latencies, and execute deterministic integration tests. Read the full [Agentic Mocking Guide](./AGENT_README.md) for instructions and prompt templates.
+
+---
+
 ## Features
 
 - **YAML-based configuration** - Define mock responses in simple YAML files
@@ -53,10 +67,29 @@ mock_files:
   hot_reload: true
 ```
 
-mocks:
+### Mock Definitions (`mocks/users.yaml`)
 
-- path: "/api/users/{id}" id: "1" status: 200 {"id": 1, "name": "Alice"}
-  # Fallback response (no conditions)
+```yaml
+mocks:
+  - path: "/api/users/{id}"
+    method: GET
+    responses:
+      - when:
+          path_params:
+            id: "1"
+        status: 200
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {"id": 1, "name": "Alice"}
+
+      # Fallback response (no conditions)
+      - status: 404
+        body: |
+          {"error": "User not found"}
+```
+
+### Matching Conditions
 
 | Condition         | Description                 | Example                         |
 | ----------------- | --------------------------- | ------------------------------- |
@@ -119,6 +152,10 @@ jimjam/
 cargo test
 ```
 
-## How jimjam works
+## 📖 Documentation Directory
 
-See [how-jimjam-works.md](./how-jimjam-works.md) for schema, matching, and advanced usage.
+| Document | Description |
+| :--- | :--- |
+| 🤖 [**Agentic Mocking Guide**](./AGENT_README.md) | Comprehensive instructions, schema reference, and prompt templates for AI coding agents |
+| 📖 [**How Jimjam Works**](./how-jimjam-works.md) | Detailed schema, matching conditions, and runtime architecture |
+| 🧪 [**Testing with Ramjam**](./ramjam-test/how-to-test-with-ramjam.md) | Guide for validating Jimjam endpoints using Ramjam declarative workflows |
