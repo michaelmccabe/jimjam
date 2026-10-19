@@ -9,7 +9,6 @@ use server::{create_router, load_mocks, AppState};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{debug, info};
-use tracing_subscriber;
 use watcher::start_file_watcher;
 
 #[tokio::main]
@@ -48,11 +47,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     // Start file watcher for hot reload if enabled
-    if config.mock_files.hot_reload {
-        if let Err(e) = start_file_watcher(Arc::clone(&state), &config).await {
+    if config.mock_files.hot_reload
+        && let Err(e) = start_file_watcher(Arc::clone(&state), &config).await {
             tracing::warn!("Failed to start file watcher: {}. Hot reload disabled.", e);
         }
-    }
 
     // Create router
     let app = create_router(state);

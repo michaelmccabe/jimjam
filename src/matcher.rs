@@ -46,12 +46,7 @@ pub fn find_matching_response<'a>(
     request: &RequestInfo,
     path_params: &HashMap<String, String>,
 ) -> Option<&'a MockResponse> {
-    for response in &endpoint.responses {
-        if matches_conditions(response, request, path_params) {
-            return Some(response);
-        }
-    }
-    None
+    endpoint.responses.iter().find(|&response| matches_conditions(response, request, path_params)).map(|v| v as _)
 }
 
 /// Check if all conditions in a response match the request
@@ -376,8 +371,10 @@ mod tests {
 
     #[test]
     fn test_condition_query_contains() {
-        let mut condition = ResponseCondition::default();
-        condition.query_contains = Some("category=".to_string());
+        let condition = ResponseCondition {
+            query_contains: Some("category=".to_string()),
+            ..Default::default()
+        };
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/search", "GET", vec![response]);
@@ -432,8 +429,10 @@ mod tests {
 
     #[test]
     fn test_condition_body_contains() {
-        let mut condition = ResponseCondition::default();
-        condition.body_contains = Some("\"role\": \"admin\"".to_string());
+        let condition = ResponseCondition {
+            body_contains: Some("\"role\": \"admin\"".to_string()),
+            ..Default::default()
+        };
 
         let response = create_response(403, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
@@ -490,8 +489,10 @@ mod tests {
 
     #[test]
     fn test_condition_body_regex_match() {
-        let mut condition = ResponseCondition::default();
-        condition.body_regex = Some(r#""email":\s*"[^"]+@test\.com""#.to_string());
+        let condition = ResponseCondition {
+            body_regex: Some(r#""email":\s*"[^"]+@test\.com""#.to_string()),
+            ..Default::default()
+        };
 
         let response = create_response(400, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
@@ -503,8 +504,10 @@ mod tests {
 
     #[test]
     fn test_condition_body_regex_no_match() {
-        let mut condition = ResponseCondition::default();
-        condition.body_regex = Some(r#"@test\.com"#.to_string());
+        let condition = ResponseCondition {
+            body_regex: Some(r#"@test\.com"#.to_string()),
+            ..Default::default()
+        };
 
         let response = create_response(400, Some(condition));
         let endpoint = create_endpoint("/api/users", "POST", vec![response]);
@@ -516,8 +519,10 @@ mod tests {
 
     #[test]
     fn test_condition_body_regex_invalid_pattern() {
-        let mut condition = ResponseCondition::default();
-        condition.body_regex = Some("[invalid".to_string()); // Invalid regex
+        let condition = ResponseCondition {
+            body_regex: Some("[invalid".to_string()), // Invalid regex
+            ..Default::default()
+        };
 
         let response = create_response(200, Some(condition));
         let endpoint = create_endpoint("/api/test", "POST", vec![response]);

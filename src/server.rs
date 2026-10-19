@@ -125,11 +125,10 @@ async fn handle_request(
         }
 
         // Check path matches
-        if let Some(path_match) = match_path(&endpoint.path, path) {
-            if let Some(response) = find_matching_response(endpoint, &request_info, &path_match.params) {
+        if let Some(path_match) = match_path(&endpoint.path, path)
+            && let Some(response) = find_matching_response(endpoint, &request_info, &path_match.params) {
                 return build_mock_response(response, &endpoint.path).await;
             }
-        }
     }
 
     // No match found
@@ -172,9 +171,9 @@ async fn build_mock_response(
     // 2. body_file: "./path/to/file.json" - load from file (explicit field)
     // 3. body: "inline content" - use directly
     let body_content = if let Some(ref body) = mock_response.body {
-        if body.starts_with('@') {
+        if let Some(file_path) = body.strip_prefix('@') {
             // Body references a file with @ prefix
-            let file_path = &body[1..]; // Remove @ prefix
+            // Remove @ prefix
             match fs::read_to_string(file_path) {
                 Ok(content) => content,
                 Err(e) => {
